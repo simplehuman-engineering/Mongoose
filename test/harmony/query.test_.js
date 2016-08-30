@@ -1,9 +1,8 @@
 var start = require('../common');
 var mongoose = start.mongoose;
 var Schema = mongoose.Schema;
-var ValidationError = require('../../lib/error/validation');
 var co = require('co');
-var assert = require('assert');
+var assert = require('power-assert');
 
 /**
  *  Mongoose queries' .exec() function returns a
@@ -33,25 +32,25 @@ describe('Queries in ES6', function() {
   it('`exec()` integrates with co and the yield keyword', function(done) {
     co(function*() {
       var schema = new Schema({
-        eggs: { type: Number, required: true },
-        bacon: { type: Number, required: true }
+        eggs: {type: Number, required: true},
+        bacon: {type: Number, required: true}
       });
- 
+
       var Breakfast = db.model('BreakfastHarmony', schema, getCollectionName());
 
       try {
         yield Breakfast.create(
-          { eggs: 4, bacon: 2 },
-          { eggs: 3, bacon: 3 },
-          { eggs: 2, bacon: 4 });
-      } catch(e) {
+          {eggs: 4, bacon: 2},
+          {eggs: 3, bacon: 3},
+          {eggs: 2, bacon: 4});
+      } catch (e) {
         return done(e);
       }
 
       var result;
       try {
-        result = yield Breakfast.findOne({ eggs: 4 }).exec();
-      } catch(e) {
+        result = yield Breakfast.findOne({eggs: 4}).exec();
+      } catch (e) {
         return done(e);
       }
 
@@ -59,8 +58,8 @@ describe('Queries in ES6', function() {
 
       var results;
       try {
-        results = yield Breakfast.find({ eggs: { $gt: 2 } }).sort({ bacon: 1 }).exec();
-      } catch(e) {
+        results = yield Breakfast.find({eggs: {$gt: 2}}).sort({bacon: 1}).exec();
+      } catch (e) {
         return done(e);
       }
 
@@ -70,8 +69,8 @@ describe('Queries in ES6', function() {
 
       var count;
       try {
-        count = yield Breakfast.count({ eggs: { $gt: 2 } }).exec();
-      } catch(e) {
+        count = yield Breakfast.count({eggs: {$gt: 2}}).exec();
+      } catch (e) {
         return done(e);
       }
 
@@ -84,7 +83,7 @@ describe('Queries in ES6', function() {
   it('can call `populate()` with `exec()`', function(done) {
     co(function*() {
       var bookSchema = new Schema({
-        author: { type: mongoose.Schema.ObjectId, ref: 'AuthorHarmony' },
+        author: {type: mongoose.Schema.ObjectId, ref: 'AuthorHarmony'},
         title: String
       });
 
@@ -96,16 +95,16 @@ describe('Queries in ES6', function() {
       var Author = db.model('AuthorHarmony', authorSchema, getCollectionName());
 
       try {
-        var hugo = yield Author.create({ name: 'Victor Hugo' });
-        yield Book.create({ author: hugo._id, title: 'Les Miserables' });
-      } catch(e) {
+        var hugo = yield Author.create({name: 'Victor Hugo'});
+        yield Book.create({author: hugo._id, title: 'Les Miserables'});
+      } catch (e) {
         return done(e);
       }
 
       var result;
       try {
-        result = yield Book.findOne({ title: 'Les Miserables' }).populate('author').exec();
-      } catch(e) {
+        result = yield Book.findOne({title: 'Les Miserables'}).populate('author').exec();
+      } catch (e) {
         return done(e);
       }
 

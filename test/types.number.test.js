@@ -3,29 +3,28 @@
  * Module dependencies.
  */
 
-var mongoose = require('./common').mongoose
-  , SchemaNumber = mongoose.Schema.Types.Number
-  , assert = require('assert')
+var mongoose = require('./common').mongoose,
+    SchemaNumber = mongoose.Schema.Types.Number,
+    assert = require('power-assert');
 
 /**
  * Test.
  */
 
-describe('types.number', function(){
-
-  it('an empty string casts to null', function (done) {
+describe('types.number', function() {
+  it('an empty string casts to null', function(done) {
     var n = new SchemaNumber();
     assert.strictEqual(n.cast(''), null);
     done();
-  })
+  });
 
-  it('a null number should castForQuery to null', function (done) {
+  it('a null number should castForQuery to null', function(done) {
     var n = new SchemaNumber();
     assert.strictEqual(n.castForQuery(null), null);
     done();
-  })
+  });
 
-  it('undefined throws number cast error', function (done) {
+  it('undefined throws number cast error', function(done) {
     var n = new SchemaNumber();
     var err;
     try {
@@ -33,11 +32,11 @@ describe('types.number', function(){
     } catch (e) {
       err = e;
     }
-    assert.strictEqual(true, !! err);
+    assert.strictEqual(true, !!err);
     done();
-  })
+  });
 
-  it('array throws cast number error', function (done) {
+  it('array throws cast number error', function(done) {
     var n = new SchemaNumber();
     var err;
     try {
@@ -45,11 +44,11 @@ describe('types.number', function(){
     } catch (e) {
       err = e;
     }
-    assert.strictEqual(true, !! err);
+    assert.strictEqual(true, !!err);
     done();
-  })
+  });
 
-  it('three throws cast number error', function (done) {
+  it('three throws cast number error', function(done) {
     var n = new SchemaNumber();
     var err;
     try {
@@ -57,11 +56,11 @@ describe('types.number', function(){
     } catch (e) {
       err = e;
     }
-    assert.strictEqual(true, !! err);
+    assert.strictEqual(true, !!err);
     done();
-  })
+  });
 
-  it('{} throws cast number error', function (done) {
+  it('{} throws cast number error', function(done) {
     var n = new SchemaNumber();
     var err;
     try {
@@ -69,13 +68,13 @@ describe('types.number', function(){
     } catch (e) {
       err = e;
     }
-    assert.strictEqual(true, !! err);
+    assert.strictEqual(true, !!err);
     done();
-  })
+  });
 
-  it('does not throw number cast error', function (done) {
+  it('does not throw number cast error', function(done) {
     var n = new SchemaNumber();
-    var items = [1, '2', '0', null, '', new String('47'), new Number(5), Number(47), 09, 0x12];
+    var items = [1, '2', '0', null, '', new String('47'), new Number(5), Number(47), Number('09'), 0x12];
     var err;
     try {
       for (var i = 0, len = items.length; i < len; ++i) {
@@ -84,8 +83,14 @@ describe('types.number', function(){
     } catch (e) {
       err = e;
     }
-    assert.strictEqual(false, !! err, err);
+    assert.strictEqual(false, !!err, err);
     done();
-  })
+  });
 
-})
+  it('boolean casts to 0/1 (gh-3475)', function(done) {
+    var n = new SchemaNumber();
+    assert.strictEqual(n.cast(true), 1);
+    assert.strictEqual(n.cast(false), 0);
+    done();
+  });
+});

@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -9,16 +8,15 @@ var MongooseBuffer = mongoose.Types.Buffer;
  * Test.
  */
 
-describe('types.buffer', function(){
-
-  it('test that a mongoose buffer behaves and quacks like a buffer', function(done){
+describe('types.buffer', function() {
+  it('test that a mongoose buffer behaves and quacks like a buffer', function(done) {
     var a = new MongooseBuffer;
 
     assert.ok(a.isMongooseBuffer);
     assert.equal(true, a.equals(a));
 
-    var a = new MongooseBuffer([195, 188, 98, 101, 114]);
-    var b = new MongooseBuffer("buffer shtuffs are neat");
+    a = new MongooseBuffer([195, 188, 98, 101, 114]);
+    var b = new MongooseBuffer('buffer shtuffs are neat');
     var c = new MongooseBuffer('aGVsbG8gd29ybGQ=', 'base64');
     var d = new MongooseBuffer(0);
 
@@ -29,13 +27,13 @@ describe('types.buffer', function(){
     done();
   });
 
-  describe('#toObject', function(){
-    it('retains custom subtypes', function(done){
+  describe('#toObject', function() {
+    it('retains custom subtypes', function(done) {
       var buf = new MongooseBuffer(0);
       var out = buf.toObject(2);
       // validate the drivers Binary type output retains the option
       assert.equal(out.sub_type, 2);
       done();
-    })
+    });
   });
 });

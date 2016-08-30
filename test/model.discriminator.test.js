@@ -2,22 +2,22 @@
  * Test dependencies.
  */
 
-var start = require('./common')
-  , mongoose = start.mongoose
-  , Schema = mongoose.Schema
-  , assert = require('assert')
-  , util = require('util')
-  , clone = require('../lib/utils').clone
-  , random = require('../lib/utils').random;
+var start = require('./common'),
+    mongoose = start.mongoose,
+    Schema = mongoose.Schema,
+    assert = require('power-assert'),
+    util = require('util'),
+    clone = require('../lib/utils').clone,
+    random = require('../lib/utils').random;
 
 /**
  * Setup
  */
 var PersonSchema = new Schema({
-    name: { first: String, last: String }
-  , gender: String
-}, { collection: 'model-discriminator-'+random() });
-PersonSchema.index({ name: 1 });
+  name: {first: String, last: String},
+  gender: String
+}, {collection: 'model-discriminator-' + random()});
+PersonSchema.index({name: 1});
 PersonSchema.methods.getFullName = function() {
   return this.name.first + ' ' + this.name.last;
 };
@@ -25,11 +25,12 @@ PersonSchema.methods.toJSonConfig = {
   include: ['prop1', 'prop2'],
   exclude: ['prop3', 'prop4']
 };
-PersonSchema.statics.findByGender = function(gender, cb) {};
-PersonSchema.virtual('name.full').get(function () {
+PersonSchema.statics.findByGender = function() {
+};
+PersonSchema.virtual('name.full').get(function() {
   return this.name.first + ' ' + this.name.last;
 });
-PersonSchema.virtual('name.full').set(function (name) {
+PersonSchema.virtual('name.full').set(function(name) {
   var split = name.split(' ');
   this.name.first = split[0];
   this.name.last = split[1];
@@ -37,49 +38,51 @@ PersonSchema.virtual('name.full').set(function (name) {
 PersonSchema.path('gender').validate(function(value) {
   return /[A-Z]/.test(value);
 }, 'Invalid name');
-PersonSchema.post('save', function (next) {
+PersonSchema.post('save', function(next) {
   next();
 });
-PersonSchema.set('toObject', { getters: true, virtuals: true });
-PersonSchema.set('toJSON',   { getters: true, virtuals: true });
+PersonSchema.set('toObject', {getters: true, virtuals: true});
+PersonSchema.set('toJSON', {getters: true, virtuals: true});
 
-var EmployeeSchema = new Schema({ department: String });
-EmployeeSchema.index({ department: 1 });
+var EmployeeSchema = new Schema({department: String});
+EmployeeSchema.index({department: 1});
 EmployeeSchema.methods.getDepartment = function() {
   return this.department;
 };
-EmployeeSchema.statics.findByDepartment = function(department, cb) {};
+EmployeeSchema.statics.findByDepartment = function() {
+};
 EmployeeSchema.path('department').validate(function(value) {
   return /[a-zA-Z]/.test(value);
 }, 'Invalid name');
-var employeeSchemaPreSaveFn = function (next) {
+var employeeSchemaPreSaveFn = function(next) {
   next();
 };
 EmployeeSchema.pre('save', employeeSchemaPreSaveFn);
-EmployeeSchema.set('toObject', { getters: true, virtuals: false });
-EmployeeSchema.set('toJSON',   { getters: false, virtuals: true });
+EmployeeSchema.set('toObject', {getters: true, virtuals: false});
+EmployeeSchema.set('toJSON', {getters: false, virtuals: true});
 
 describe('model', function() {
   describe('discriminator()', function() {
     var db, Person, Employee;
 
-    before(function(){
+    before(function() {
       db = start();
       Person = db.model('model-discriminator-person', PersonSchema);
       Employee = Person.discriminator('model-discriminator-employee', EmployeeSchema);
     });
 
-    after(function(done){
+    after(function(done) {
       db.close(done);
     });
 
     it('model defaults without discriminator', function(done) {
-      var Model = db.model('model-discriminator-defaults', new Schema(), 'model-discriminator-'+random());
+      var Model = db.model('model-discriminator-defaults', new Schema(), 'model-discriminator-' + random());
       assert.equal(Model.discriminators, undefined);
       done();
     });
 
     it('is instance of root', function(done) {
+      assert.equal(Employee.baseModelName, 'model-discriminator-person');
       var employee = new Employee();
       assert.ok(employee instanceof Person);
       assert.ok(employee instanceof Employee);
@@ -97,20 +100,21 @@ describe('model', function() {
           createdAt: Date
         });
       }
+
       util.inherits(BossBaseSchema, Schema);
 
       var PersonSchema = new BossBaseSchema();
-      var BossSchema = new BossBaseSchema({ department: String });
-      BossSchema.methods.myName = function(){
+      var BossSchema = new BossBaseSchema({department: String});
+      BossSchema.methods.myName = function() {
         return this.name;
       };
-      BossSchema.statics.currentPresident = function(){
+      BossSchema.statics.currentPresident = function() {
         return 'obama';
       };
       var Person = db.model('Person', PersonSchema);
       var Boss = Person.discriminator('Boss', BossSchema);
 
-      var boss = new Boss({name:'Bernenke'});
+      var boss = new Boss({name: 'Bernenke'});
       assert.equal(boss.myName(), 'Bernenke');
       assert.equal(boss.notInstanceMethod, undefined);
       assert.equal(Boss.currentPresident(), 'obama');
@@ -119,12 +123,12 @@ describe('model', function() {
     });
 
     it('sets schema root discriminator mapping', function(done) {
-      assert.deepEqual(PersonSchema.discriminatorMapping, { key: '__t', value: null, isRoot: true });
+      assert.deepEqual(PersonSchema.discriminatorMapping, {key: '__t', value: null, isRoot: true});
       done();
     });
 
     it('sets schema discriminator type mapping', function(done) {
-      assert.deepEqual(EmployeeSchema.discriminatorMapping, { key: '__t', value: 'model-discriminator-employee', isRoot: false });
+      assert.deepEqual(EmployeeSchema.discriminatorMapping, {key: '__t', value: 'model-discriminator-employee', isRoot: false});
       done();
     });
 
@@ -147,53 +151,53 @@ describe('model', function() {
 
     it('throws error on invalid schema', function(done) {
       assert.throws(
-        function() {
-          Person.discriminator('Foo');
-        },
-        /You must pass a valid discriminator Schema/
+          function() {
+            Person.discriminator('Foo');
+          },
+          /You must pass a valid discriminator Schema/
       );
       done();
     });
 
     it('throws error when attempting to nest discriminators', function(done) {
       assert.throws(
-        function() {
-          Employee.discriminator('model-discriminator-foo', new Schema());
-        },
-        /Discriminator "model-discriminator-foo" can only be a discriminator of the root model/
+          function() {
+            Employee.discriminator('model-discriminator-foo', new Schema());
+          },
+          /Discriminator "model-discriminator-foo" can only be a discriminator of the root model/
       );
       done();
     });
 
     it('throws error when discriminator has mapped discriminator key in schema', function(done) {
       assert.throws(
-        function() {
-          Person.discriminator('model-discriminator-foo', new Schema({ __t: String }));
-        },
-        /Discriminator "model-discriminator-foo" cannot have field with name "__t"/
+          function() {
+            Person.discriminator('model-discriminator-foo', new Schema({__t: String}));
+          },
+          /Discriminator "model-discriminator-foo" cannot have field with name "__t"/
       );
       done();
     });
 
     it('throws error when discriminator has mapped discriminator key in schema with discriminatorKey option set', function(done) {
       assert.throws(
-        function() {
-          var Foo = db.model('model-discriminator-foo', new Schema({}, { discriminatorKey: '_type' }), 'model-discriminator-'+random());
-          Foo.discriminator('model-discriminator-bar', new Schema({ _type: String }));
-        },
-        /Discriminator "model-discriminator-bar" cannot have field with name "_type"/
+          function() {
+            var Foo = db.model('model-discriminator-foo', new Schema({}, {discriminatorKey: '_type'}), 'model-discriminator-' + random());
+            Foo.discriminator('model-discriminator-bar', new Schema({_type: String}));
+          },
+          /Discriminator "model-discriminator-bar" cannot have field with name "_type"/
       );
       done();
     });
 
     it('throws error when discriminator with taken name is added', function(done) {
-      var Foo = db.model('model-discriminator-foo', new Schema({}), 'model-discriminator-'+random());
+      var Foo = db.model('model-discriminator-foo', new Schema({}), 'model-discriminator-' + random());
       Foo.discriminator('model-discriminator-taken', new Schema());
       assert.throws(
-        function() {
-          Foo.discriminator('model-discriminator-taken', new Schema());
-        },
-        /Discriminator with name "model-discriminator-taken" already exists/
+          function() {
+            Foo.discriminator('model-discriminator-taken', new Schema());
+          },
+          /Discriminator with name "model-discriminator-taken" already exists/
       );
       done();
     });
@@ -209,12 +213,12 @@ describe('model', function() {
       util.inherits(MinionSchema, mongoose.Schema);
 
       var BaseSchema = function() {
-        mongoose.Schema.apply( this, arguments );
+        mongoose.Schema.apply(this, arguments);
 
         this.add({
           name: String,
           created_at: Date,
-          minions: [ new MinionSchema() ]
+          minions: [new MinionSchema()]
         });
       };
       util.inherits(BaseSchema, mongoose.Schema);
@@ -226,7 +230,7 @@ describe('model', function() {
 
       assert.doesNotThrow(function() {
         var Person = db.model('gh2821', PersonSchema);
-        var Boss = Person.discriminator('Boss', BossSchema);
+        Person.discriminator('Boss', BossSchema);
       });
       done();
     });
@@ -234,27 +238,27 @@ describe('model', function() {
     describe('options', function() {
       it('allows toObject to be overridden', function(done) {
         assert.notDeepEqual(Employee.schema.get('toObject'), Person.schema.get('toObject'));
-        assert.deepEqual(Employee.schema.get('toObject'), { getters: true, virtuals: false });
+        assert.deepEqual(Employee.schema.get('toObject'), {getters: true, virtuals: false});
         done();
       });
 
       it('allows toJSON to be overridden', function(done) {
         assert.notDeepEqual(Employee.schema.get('toJSON'), Person.schema.get('toJSON'));
-        assert.deepEqual(Employee.schema.get('toJSON'), { getters: false, virtuals: true });
+        assert.deepEqual(Employee.schema.get('toJSON'), {getters: false, virtuals: true});
         done();
       });
 
       it('is not customizable', function(done) {
-          var errorMessage
-            , CustomizedSchema = new Schema({}, { capped: true });
-          try {
-              Person.discriminator('model-discriminator-custom', CustomizedSchema);
-          } catch (e) {
-              errorMessage = e.message
-          }
+        var errorMessage,
+            CustomizedSchema = new Schema({}, {capped: true});
+        try {
+          Person.discriminator('model-discriminator-custom', CustomizedSchema);
+        } catch (e) {
+          errorMessage = e.message;
+        }
 
-          assert.equal(errorMessage, 'Discriminator options are not customizable (except toJSON & toObject)');
-          done();
+        assert.equal(errorMessage, 'Discriminator options are not customizable (except toJSON, toObject, _id)');
+        done();
       });
     });
 
@@ -273,8 +277,8 @@ describe('model', function() {
       });
 
       it('does not inherit and override fields that exist', function(done) {
-        var FemaleSchema = new Schema({ gender: { type: String, default: 'F' }})
-          , Female = Person.discriminator('model-discriminator-female', FemaleSchema);
+        var FemaleSchema = new Schema({gender: {type: String, default: 'F'}}),
+            Female = Person.discriminator('model-discriminator-female', FemaleSchema);
 
         var gender = Female.schema.paths.gender;
 
@@ -307,26 +311,27 @@ describe('model', function() {
       });
 
       it('merges callQueue with base queue defined before discriminator types callQueue', function(done) {
-        assert.equal(Employee.schema.callQueue.length, 3);
+        assert.equal(Employee.schema.callQueue.length, 4);
         // PersonSchema.post('save')
         assert.strictEqual(Employee.schema.callQueue[0], Person.schema.callQueue[0]);
 
         // EmployeeSchema.pre('save')
-        assert.strictEqual(Employee.schema.callQueue[2][0], 'pre');
-        assert.strictEqual(Employee.schema.callQueue[2][1]['0'], 'save');
-        assert.strictEqual(Employee.schema.callQueue[2][1]['1'], employeeSchemaPreSaveFn);
+        var queueIndex = Employee.schema.callQueue.length - 1;
+        assert.strictEqual(Employee.schema.callQueue[queueIndex][0], 'pre');
+        assert.strictEqual(Employee.schema.callQueue[queueIndex][1]['0'], 'save');
+        assert.strictEqual(Employee.schema.callQueue[queueIndex][1]['1'], employeeSchemaPreSaveFn);
         done();
       });
 
       it('does not inherit indexes', function(done) {
-        assert.deepEqual(Person.schema.indexes(), [[{ name: 1 }, { background: true, safe: undefined }]]);
-        assert.deepEqual(Employee.schema.indexes(), [[{ department: 1 }, { background: true, safe: undefined }]]);
+        assert.deepEqual(Person.schema.indexes(), [[{name: 1}, {background: true}]]);
+        assert.deepEqual(Employee.schema.indexes(), [[{department: 1}, {background: true}]]);
         done();
       });
 
       it('gets options overridden by root options except toJSON and toObject', function(done) {
-        var personOptions = clone(Person.schema.options)
-          , employeeOptions = clone(Employee.schema.options);
+        var personOptions = clone(Person.schema.options),
+            employeeOptions = clone(Employee.schema.options);
 
         delete personOptions.toJSON;
         delete personOptions.toObject;
