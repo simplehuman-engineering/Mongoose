@@ -1,5 +1,8 @@
 # Mongoose
 
+## Swenson He additions
+[Connections](https://github.com/simplehuman-engineering/mongoose/commit/02503cb9288f01ff74e91d03ea5f5cc2d267e97a)<br>
+
 Mongoose is a [MongoDB](https://www.mongodb.org/) object modeling tool designed to work in an asynchronous environment.
 
 [![Build Status](https://api.travis-ci.org/Automattic/mongoose.png?branch=master)](https://travis-ci.org/Automattic/mongoose)
